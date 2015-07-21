@@ -26,17 +26,32 @@
         collect el into els
         finally (return (list is els))))
 
+(defun reverse&group-ascending (seq)
+  "(5 3 4 2 1) -> ((1 2 4) (3 5))
+(Reversed because it is more convenient to put cards on top of formed heaps."
+  (let ((groups (list)))
+    (dolist (el seq)
+      (if (and groups (< el (caar groups)))
+          (push el (car groups))
+          (push (list el) groups)))
+    groups))
+
+(defun inv-perm (perm &key (predicate '<) (key 'identity))
+  "The permutation of the enumerated sequence 0A 1B 2C to B0 C1 A2 can be represented in two ways:
+- 0A2 1B0 2C1 -> 2 0 1 when matched to the source sequence;
+- 1B0 2C1 0A2 -> 1 2 0 when matched to the target sequence.
+This function converts between the two representations.
+KEY should extract permutation index from an element of PERM.
+PREDICATE should be true when a pair of elements of PERM is not permuted and the reversed pair is permuted."
+  (flet ((sort-key (v) (funcall key (cdr v))))
+    (apply #'values (denumerate (stable-sort (enumerate perm) predicate :key #'sort-key)))))
+
 (defun manual-shuffle (n)
   (let* ((perm (coerce (random-permutation n) 'list))
-         (heaps (list)))
-    (dolist (el perm)
-      (if (and heaps (> el (caar heaps)))
-          (push el (car heaps))
-          (push (list el) heaps)))
-    (let+ ((heaps (nreverse (mapcar 'nreverse heaps)))
-           ((ordering heaps) (denumerate (sort (enumerate heaps) '< :key 'cadr))))
+         (heaps (reverse&group-ascending perm)))
+    (let+ (((&values ordering heaps) (inv-perm heaps :key #'first)))
       (values (loop for i below n collect (1+ (position-if (lambda (heap) (member i heap)) heaps)))
-              (mapcar '1+ ordering)
+              (mapcar '1+ (inv-perm ordering))
               (mapcar '1+ perm)))))
 
 (defun simple-shuffle (n m)
