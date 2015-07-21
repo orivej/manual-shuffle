@@ -1,6 +1,8 @@
 (defpackage #:manual-shuffle
   (:use #:cl #:let-plus)
-  (:export #:manual-shuffle))
+  (:export #:manual-shuffle
+           #:simple-shuffle
+           #:shortest-shuffle))
 
 (in-package #:manual-shuffle)
 
@@ -59,3 +61,18 @@ PREDICATE should be true when a pair of elements of PERM is not permuted and the
     (multiple-value-bind (seq ordering) (manual-shuffle n)
       (when (<= (length ordering) m)
         (return (values seq ordering))))))
+
+(defun shortest-shuffle (n)
+  (let (best
+        best-ordering-length)
+    (restart-case
+        (loop
+          (let* ((cur (multiple-value-list (manual-shuffle n)))
+                 (cur-ordering-length (length (second cur))))
+            (when (or (not best) (< cur-ordering-length best-ordering-length))
+              (print
+               (setf best cur
+                     best-ordering-length cur-ordering-length)))))
+      (return-best ()
+        :report "Return the shortest shuffle so far."
+        (apply #'values best)))))
