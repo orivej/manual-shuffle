@@ -2,7 +2,8 @@
   (:use #:cl #:let-plus)
   (:export #:manual-shuffle
            #:simple-shuffle
-           #:shortest-shuffle))
+           #:shortest-shuffle
+           #:random-positions))
 
 (in-package #:manual-shuffle)
 
@@ -76,3 +77,7 @@ PREDICATE should be true when a pair of elements of PERM is not permuted and the
       (return-best ()
         :report "Return the shortest shuffle so far."
         (apply #'values best)))))
+
+(defun random-positions (n m)
+  "Find M random positions in a deck of N cards (to shuffle M cards back in the deck)."
+  (sort (loop :repeat m :collect (random (+ n 2))) #'<))
