@@ -81,3 +81,20 @@ PREDICATE should be true when a pair of elements of PERM is not permuted and the
 (defun random-positions (n m)
   "Find M random positions in a deck of N cards (to shuffle M cards back in the deck)."
   (sort (loop :repeat m :collect (random (+ n 2))) #'<))
+
+(let* ((consonants "kstnhmrw")
+       (vowels "aiueo")
+       (syllables (loop :for c :in (list* "" (coerce consonants 'list))
+                        :nconc (loop :for v :in (coerce vowels 'list)
+                                     :collect (rutils:strcat c v))))
+       (syllables (coerce syllables 'vector)))
+  (defun n->ja (n)
+    "Return a japanese syllable for a positive integer N."
+    (if (<= 1 n (length syllables))
+        (aref syllables (1- n))
+        n)))
+
+(defun fun->ja (fun &rest args)
+  (let* ((vv (multiple-value-list (apply fun args)))
+         (vv (mapcar (lambda (v) (rutils:strjoin " " (mapcar #'n->ja v))) vv)))
+    (apply #'values vv)))
