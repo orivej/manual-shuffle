@@ -14,18 +14,18 @@
 (define-widget w (QWidget)
   ())
 
-(define-subwidget (w button1) (q+:make-qpushbutton "Manual shuffle" w))
+(define-subwidget (w button1) (q+:make-qpushbutton "Manual shuffle"))
 
-(define-subwidget (w input1-n) (q+:make-qlineedit w)
+(define-subwidget (w input1-n) (q+:make-qlineedit)
   (setf (q+:placeholder-text input1-n) "N")
   (setf (q+:validator input1-n) (q+:make-qintvalidator 1 +max-cards-number+ w)))
 
-(define-subwidget (w toggle1-ja) (q+:make-qcheckbox "as japanese syllables" w)
+(define-subwidget (w toggle1-ja) (q+:make-qcheckbox "as japanese syllables")
   (setf (q+:checked toggle1-ja) t))
 
-(define-subwidget (w toggle1-opt) (q+:make-qcheckbox "minimize # heaps" w))
+(define-subwidget (w toggle1-opt) (q+:make-qcheckbox "minimize # heaps"))
 
-(define-subwidget (w output) (q+:make-qtextedit w)
+(define-subwidget (w output) (q+:make-qtextedit)
   (setf (q+:font-family output) +output-font-family+)
   (setf (q+:font-point-size output) +output-font-point-size+))
 
