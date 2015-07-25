@@ -3,7 +3,8 @@
   (:export #:manual-shuffle
            #:simple-shuffle
            #:shortest-shuffle
-           #:random-positions))
+           #:random-positions
+           #:list->ja))
 
 (in-package #:manual-shuffle)
 
@@ -94,7 +95,10 @@ PREDICATE should be true when a pair of elements of PERM is not permuted and the
         (aref syllables (1- n))
         n)))
 
+(defun list->ja (seq)
+  (rutils:strjoin " " (mapcar #'n->ja seq)))
+
 (defun fun->ja (fun &rest args)
   (let* ((vv (multiple-value-list (apply fun args)))
-         (vv (mapcar (lambda (v) (rutils:strjoin " " (mapcar #'n->ja v))) vv)))
+         (vv (mapcar #'list->ja vv)))
     (apply #'values vv)))
