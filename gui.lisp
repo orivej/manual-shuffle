@@ -30,7 +30,7 @@
   (setf (q+:font-point-size output) +output-font-point-size+))
 
 (define-subwidget (w layout) (q+:make-qvboxlayout w)
-  (let ((layout1 (q+:make-qhboxlayout w)))
+  (let ((layout1 (q+:make-qhboxlayout)))
     (q+:add-widget layout1 button1)
     (q+:add-widget layout1 input1-n)
     (q+:add-widget layout1 toggle1-ja)
@@ -45,6 +45,8 @@
 (define-slot (w button1) ()
   (declare (connected button1 (pressed)))
   (declare (connected input1-n (return-pressed)))
+  (q+:select-all input1-n)
+  (q+:set-focus input1-n)
   (let ((v (parse-integer (q+:text input1-n) :junk-allowed t)))
     (when v (signal! w (do-manual-shuffle int bool bool)
                      v
