@@ -85,7 +85,7 @@ PREDICATE should be true when a pair of elements of PERM is not permuted and the
 
 (defun random-positions (n m)
   "Find M random positions in a deck of N cards (to shuffle M cards back in the deck)."
-  (sort (loop :repeat m :collect (random (+ n 2))) #'<))
+  (sort (loop :repeat m :collect (random (+ n 1))) #'<))
 
 (let* ((consonants "kstnhmrw")
        (vowels "aiueo")
