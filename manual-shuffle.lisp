@@ -4,7 +4,8 @@
            #:simple-shuffle
            #:shortest-shuffle
            #:random-positions
-           #:list->ja))
+           #:list->ja
+           #:list->rle))
 
 (in-package #:manual-shuffle)
 
@@ -106,3 +107,27 @@ PREDICATE should be true when a pair of elements of PERM is not permuted and the
   (let* ((vv (multiple-value-list (apply fun args)))
          (vv (mapcar #'list->ja vv)))
     (apply #'values vv)))
+
+(defun list->rle (seq)
+  (rle (list->next seq 1)))
+
+(defun list->next (seq next)
+  (mapcar (lambda (el)
+            (if (/= el next) el
+                (progn (incf next) :next)))
+          seq))
+
+(defun rle (seq)
+  (labels ((val (el)
+             (if (atom el) el (first el)))
+           (cnt (el)
+             (if (atom el) 1 (second el)))
+           (recur (seq prev)
+             (cond
+               ((null seq)
+                (list prev))
+               ((eql (first seq) (val prev))
+                (recur (rest seq) (list (first seq) (1+ (cnt prev)))))
+               (t
+                (list* prev (recur (rest seq) (first seq)))))))
+    (recur (rest seq) (first seq))))

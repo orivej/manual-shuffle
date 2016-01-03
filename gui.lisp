@@ -69,9 +69,10 @@
           (manual-shuffle:manual-shuffle n))
     (let ((*print-pretty* nil)
           (nheaps (reduce #'max heaps)))
-      (when ja
-        (setf heaps (manual-shuffle:list->ja heaps)
-              ordering (manual-shuffle:list->ja ordering)))
+      (if ja
+          (setf heaps (manual-shuffle:list->ja heaps)
+                ordering (manual-shuffle:list->ja ordering))
+          (setf heaps (manual-shuffle:list->rle heaps)))
       (setf (q+:text output) (format nil "~a heap~:p: ~a.~%Ordering: ~a.~%Permutation: ~a."
                                      nheaps heaps ordering perm)))))
 
