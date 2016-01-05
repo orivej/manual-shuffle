@@ -1,5 +1,6 @@
 (defpackage #:manual-shuffle
-  (:use #:cl #:let-plus #:local-time)
+  (:use #:cl #:let-plus #:local-time
+        #:hu.dwim.defclass-star #:qlist)
   (:export #:manual-shuffle
            #:simple-shuffle
            #:shortest-shuffle
