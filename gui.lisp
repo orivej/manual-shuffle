@@ -20,8 +20,10 @@
   (setf (q+:placeholder-text input-n) "N")
   (setf (q+:validator input-n) (q+:make-qintvalidator 1 +max-cards-number+ w)))
 
-(define-subwidget (w toggle-ja) (q+:make-qcheckbox "as japanese syllables")
-  (setf (q+:checked toggle-ja) t))
+(define-subwidget (w toggle-v2) (q+:make-qcheckbox "v2")
+  (setf (q+:checked toggle-v2) t))
+
+(define-subwidget (w toggle-ja) (q+:make-qcheckbox "as japanese syllables"))
 
 (define-subwidget (w toggle-opt) (q+:make-qcheckbox "minimize # heaps"))
 
@@ -39,6 +41,7 @@
   (let ((layout1 (q+:make-qhboxlayout)))
     (q+:add-widget layout1 button1)
     (q+:add-widget layout1 input-n)
+    (q+:add-widget layout1 toggle-v2)
     (q+:add-widget layout1 toggle-ja)
     (q+:add-widget layout1 toggle-opt)
     (q+:add-widget layout1 button2)
@@ -48,7 +51,7 @@
   (q+:add-widget layout output)
   (q+:set-focus input-n))
 
-(define-signal (w do-manual-shuffle) (int bool bool))
+(define-signal (w do-manual-shuffle) (int bool bool bool))
 
 (define-slot (w button1) ()
   (declare (connected button1 (pressed)))
@@ -56,25 +59,36 @@
   (q+:select-all input-n)
   (q+:set-focus input-n)
   (let ((n (parse-integer (q+:text input-n) :junk-allowed t)))
-    (when n (signal! w (do-manual-shuffle int bool bool)
+    (when n (signal! w (do-manual-shuffle int bool bool bool)
                      n
+                     (q+:is-checked toggle-v2)
                      (q+:is-checked toggle-ja)
                      (q+:is-checked toggle-opt)))))
 
-(define-slot (w do-manual-shuffle) ((n int) (ja bool) (opt bool))
-  (declare (connected w (do-manual-shuffle int bool bool)))
-  (multiple-value-bind (heaps ordering perm)
-      (if opt
-          (manual-shuffle:shortest-shuffle n :timeout +shuffling-timelimit+)
-          (manual-shuffle:manual-shuffle n))
-    (let ((*print-pretty* nil)
-          (nheaps (reduce #'max heaps)))
-      (if ja
-          (setf heaps (manual-shuffle:list->ja heaps)
-                ordering (manual-shuffle:list->ja ordering))
-          (setf heaps (manual-shuffle:list->rle heaps)))
-      (setf (q+:text output) (format nil "~a heap~:p: ~a.~%Ordering: ~a.~%Permutation: ~a."
-                                     nheaps heaps ordering perm)))))
+(define-slot (w do-manual-shuffle) ((n int) (v2 bool) (ja bool) (opt bool))
+  (declare (connected w (do-manual-shuffle int bool bool bool)))
+  (let ((*print-pretty* nil))
+    (cond
+      ((not v2)
+       (multiple-value-bind (heaps ordering perm)
+           (if opt
+               (manual-shuffle:shortest-shuffle n :timeout +shuffling-timelimit+)
+               (manual-shuffle:manual-shuffle n))
+         (if ja
+             (setf heaps (manual-shuffle:list->ja heaps)
+                   ordering (manual-shuffle:list->ja ordering))
+             (setf heaps (manual-shuffle:list->rle heaps)))
+         (let ((nheaps (reduce #'max heaps)))
+           (setf (q+:text output)
+                 (format nil "~a heap~:p: ~a.~%Ordering: ~a.~%Permutation: ~a."
+                         nheaps heaps ordering perm)))))
+      (t
+       (multiple-value-bind (actions perm nheaps)
+           (manual-shuffle:manual-shuffle-v2 n)
+         (setf actions (manual-shuffle:shorten-actions-text actions))
+         (setf (q+:text output)
+               (format nil "~a heap~:p: ~a.~%Permutation: ~a."
+                       (1+ nheaps) actions perm)))))))
 
 (define-signal (w do-random-positions) (int int))
 

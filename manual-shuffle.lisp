@@ -6,7 +6,9 @@
            #:shortest-shuffle
            #:random-positions
            #:list->ja
-           #:list->rle))
+           #:list->rle
+           #:manual-shuffle-v2
+           #:shorten-actions-text))
 
 (in-package #:manual-shuffle)
 

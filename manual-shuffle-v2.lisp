@@ -37,7 +37,7 @@
                 :do (progn
                       (setf (heap-at position) heap)
                       (setf position (in-deck (1- position)))))))))
-    (dolist (target-position perm (values (rest actions) perm))
+    (dolist (target-position perm)
       (let+ ((next-position (in-deck (1+ target-position)))
              (prev-position (in-deck (1- target-position)))
              ;; Select a heap for the card.
@@ -50,4 +50,16 @@
         (when prev-heap
           (set-heap-at prev-position heap)
           (free-heap prev-heap)
-          (lenqueue actions (list :stack prev-heap)))))))
+          (lenqueue actions (list :stack prev-heap)))))
+    (values (rest actions) perm (next-heap-of st))))
+
+(defun shorten-actions-text (actions)
+  (mapcar (lambda (action)
+            (cond
+              ((atom action)
+               action)
+              ((eq :stack (first action))
+               (format nil "⛁~d" (second action)))
+              (t
+               action)))
+          actions))
