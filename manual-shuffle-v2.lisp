@@ -54,12 +54,13 @@
     (values (rest actions) perm (next-heap-of st))))
 
 (defun shorten-actions-text (actions)
-  (mapcar (lambda (action)
+  (mapcon (lambda+ ((action &rest rest))
             (cond
-              ((atom action)
-               action)
-              ((eq :stack (first action))
-               (format nil "⛁~d" (second action)))
+              ((listp action)
+               nil)
+              ((and (listp (first rest))
+                    (eq :stack (first (first rest))))
+               (list (format nil "~d⛁~d" action (second (first rest)))))
               (t
-               action)))
+               (list action))))
           actions))
