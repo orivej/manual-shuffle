@@ -2,15 +2,23 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"strings"
 )
 
-// v2shuffle actions encoding:
+// v2result actions encoding:
 // - 1..M :: put one card onto specified deck
 // - -M..-1 :: put specified deck onto the deck from the previous move
-func v2shuffle(n int) (actions, perm []int, nheaps int) {
-	actions, perm, nheaps = make([]int, 0, n), rand.Perm(n), 0
+type v2result struct {
+	Perm       []int
+	Actions    []int
+	NHeaps     int
+	SquareSide int
+}
+
+func v2shuffle(n int) v2result {
+	perm, actions, nheaps := rand.Perm(n), make([]int, 0, n), 0
 	top := make([]int, n)   // "On top of which heap (1..nheaps) is the card (0..N-1)?"
 	bot := make([]int, n)   // "At the bottom of which is it?"
 	above := make([]int, n) // "What card is at the top of this bottom of the heap?"
@@ -46,12 +54,28 @@ func v2shuffle(n int) (actions, perm []int, nheaps int) {
 			actions = append(actions, -bot[prev])
 		}
 	}
-	return
+	side := 0
+	if nheaps > 9 && nheaps <= 9*9 {
+		side = 1 + int(math.Sqrt(float64(nheaps-1)))
+	}
+	return v2result{perm, actions, nheaps, side}
 }
 
-func v2actionsString(actions []int) string {
+func (r v2result) String() string {
+	actions := r.Actions
+	if r.SquareSide != 0 {
+		for i, action := range actions {
+			sign := 1
+			if action < 0 {
+				sign, action = -1, -action
+			}
+			y := 1 + (action-1)/r.SquareSide
+			x := 1 + (action-1)%r.SquareSide
+			actions[i] = sign * (10*y + x)
+		}
+	}
 	s := fmt.Sprint(actions)
 	s = strings.Trim(s, "[]")
-	s = strings.Replace(s, " -", "⛁", -1)
+	s = strings.Replace(s, " -", "\uFEFF⛁\uFEFF", -1)
 	return s
 }

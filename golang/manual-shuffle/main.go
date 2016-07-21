@@ -70,7 +70,11 @@ func uiSetup() {
 }
 
 func uiShuffle(count *gtk.SpinButton, fieldBuf *gtk.TextBuffer) {
-	actions, perm, nheaps := v2shuffle(int(count.GetValue()))
-	fieldBuf.SetText(fmt.Sprintf("%d heaps.\n%d actions: %s.\nPermutation: %v.",
-		nheaps, len(actions), v2actionsString(actions), perm))
+	r := v2shuffle(count.GetValueAsInt())
+	sides := ""
+	if r.SquareSide != 0 {
+		sides = fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
+	}
+	fieldBuf.SetText(fmt.Sprintf("%d heaps%s.\n%d actions: %s.\nPermutation: %v.",
+		r.NHeaps, sides, len(r.Actions), r, r.Perm))
 }
