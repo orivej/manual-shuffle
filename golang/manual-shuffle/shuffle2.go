@@ -76,6 +76,6 @@ func (r v2result) String() string {
 	}
 	s := fmt.Sprint(actions)
 	s = strings.Trim(s, "[]")
-	s = strings.Replace(s, " -", "\uFEFF⛁\uFEFF", -1)
+	s = strings.Replace(s, " -", "&", -1)
 	return s
 }

@@ -8,7 +8,10 @@ import (
 	"github.com/orivej/e"
 )
 
-const title = "Manual shuffle"
+const (
+	title  = "Manual shuffle"
+	bigCSS = "* {font-family: 'Open Sans Condensed Light'; font-size: 22pt}"
+)
 
 func main() {
 	gtk.Init(nil)
@@ -37,7 +40,7 @@ func uiSetup() {
 
 	style, err := gtk.CssProviderNew()
 	e.Exit(err)
-	err = style.LoadFromData("* {font-family: Anivers; font-size: 22pt}")
+	err = style.LoadFromData(bigCSS)
 	e.Exit(err)
 	fieldStyleCtx, err := field.GetStyleContext()
 	e.Exit(err)
