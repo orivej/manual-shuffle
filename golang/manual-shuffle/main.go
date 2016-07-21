@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/orivej/e"
@@ -43,8 +44,10 @@ func uiSetup() {
 	fieldStyleCtx.AddProvider(style, gtk.STYLE_PROVIDER_PRIORITY_USER+1)
 
 	cb := func() { uiShuffle(count, fieldBuf) }
+	count.Connect("changed", cb)
 	count.Connect("activate", cb)
 	shuffle.Connect("clicked", cb)
+	cb()
 
 	panel, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	e.Exit(err)
@@ -70,11 +73,17 @@ func uiSetup() {
 }
 
 func uiShuffle(count *gtk.SpinButton, fieldBuf *gtk.TextBuffer) {
-	r := v2shuffle(count.GetValueAsInt())
+	text, err := count.GetText()
+	e.Exit(err)
+	n, err := strconv.Atoi(text)
+	if err != nil {
+		return
+	}
+	r := v2shuffle(n)
 	sides := ""
 	if r.SquareSide != 0 {
 		sides = fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
 	}
-	fieldBuf.SetText(fmt.Sprintf("%d heaps%s.\n%d actions: %s.\nPermutation: %v.",
+	fieldBuf.SetText(fmt.Sprintf("%d heaps%s. %d actions:\n%s.\nPermutation: %v.",
 		r.NHeaps, sides, len(r.Actions), r, r.Perm))
 }
