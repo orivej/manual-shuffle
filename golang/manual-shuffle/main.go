@@ -2,56 +2,75 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 
-	"github.com/andlabs/ui"
+	"github.com/gotk3/gotk3/gtk"
 	"github.com/orivej/e"
 )
 
+const title = "Manual shuffle"
+
 func main() {
-	e.Exit(ui.Main(uiMain))
+	gtk.Init(nil)
+	uiSetup()
+	gtk.Main()
 }
 
-func uiMain() {
-	count := ui.NewEntry()
-	count.SetText("2")
-	shuffle := ui.NewButton("Manual shuffle")
-	v2 := ui.NewCheckbox("v2")
-	v2.SetChecked(true)
-	field := ui.NewMultilineEntry()
+func uiSetup() {
+	count, err := gtk.SpinButtonNewWithRange(2, 999, 1)
+	e.Exit(err)
+	count.SetValue(2)
 
-	shuffle.OnClicked(func(*ui.Button) {
-		text := count.Text()
-		n, err := strconv.Atoi(text)
-		if err != nil {
-			field.SetText(err.Error())
-			return
-		}
-		if n < 1 {
-			field.SetText("The number must be positive.")
-			return
-		}
-		actions, perm, nheaps := v2shuffle(n)
-		field.SetText(fmt.Sprintf("%d heaps.\nActions: %s.\nPermutation: %v.",
-			nheaps, v2actionsString(actions), perm))
-	})
+	shuffle, err := gtk.ButtonNewWithLabel("Manual shuffle")
+	e.Exit(err)
 
-	panel := ui.NewHorizontalBox()
-	panel.Append(count, false)
-	panel.Append(shuffle, false)
-	// panel.Append(v2, false)
+	v2, err := gtk.CheckButtonNewWithLabel("v2")
+	e.Exit(err)
+	v2.SetActive(true)
 
-	layout := ui.NewVerticalBox()
-	layout.Append(panel, false)
-	layout.Append(field, true)
+	field, err := gtk.TextViewNew()
+	e.Exit(err)
+	field.SetAcceptsTab(false)
+	field.SetWrapMode(gtk.WRAP_WORD)
+	fieldBuf, err := field.GetBuffer()
+	e.Exit(err)
 
-	window := ui.NewWindow("Manual shuffle", 800, 600, false)
-	window.SetChild(layout)
-	window.OnClosing(uiQuit)
-	window.Show()
+	style, err := gtk.CssProviderNew()
+	e.Exit(err)
+	err = style.LoadFromData("* {font-family: Anivers; font-size: 22pt}")
+	e.Exit(err)
+	fieldStyleCtx, err := field.GetStyleContext()
+	e.Exit(err)
+	fieldStyleCtx.AddProvider(style, gtk.STYLE_PROVIDER_PRIORITY_USER+1)
+
+	cb := func() { uiShuffle(count, fieldBuf) }
+	count.Connect("activate", cb)
+	shuffle.Connect("clicked", cb)
+
+	panel, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
+	e.Exit(err)
+	panel.Add(count)
+	panel.Add(shuffle)
+	// panel.Add(v2)
+
+	fieldWindow, err := gtk.ScrolledWindowNew(nil, nil)
+	e.Exit(err)
+	fieldWindow.Add(field)
+
+	layout, err := gtk.BoxNew(gtk.ORIENTATION_VERTICAL, 0)
+	e.Exit(err)
+	layout.Add(panel)
+	layout.PackStart(fieldWindow, true, true, 0)
+
+	window, err := gtk.WindowNew(gtk.WINDOW_TOPLEVEL)
+	e.Exit(err)
+	window.SetTitle(title)
+	window.Add(layout)
+	window.Connect("destroy", gtk.MainQuit)
+	window.ShowAll()
 }
 
-func uiQuit(*ui.Window) bool {
-	ui.Quit()
-	return true
+func uiShuffle(count *gtk.SpinButton, fieldBuf *gtk.TextBuffer) {
+	actions, perm, nheaps := v2shuffle(int(count.GetValue()))
+	fieldBuf.SetText(fmt.Sprintf("%d heaps.\n%d actions: %s.\nPermutation: %v.",
+		nheaps, len(actions), v2actionsString(actions), perm))
 }
