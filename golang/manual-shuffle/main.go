@@ -35,9 +35,9 @@ func main() {
 
 func uiSetup() {
 	var err error
-	w.count, err = gtk.SpinButtonNewWithRange(2, 999, 1)
+	w.count, err = gtk.SpinButtonNewWithRange(1, 999, 1)
 	e.Exit(err)
-	w.count.SetValue(2)
+	w.count.SetValue(1)
 
 	shuffle, err := gtk.ButtonNewWithLabel("Shuffle")
 	e.Exit(err)
@@ -46,7 +46,7 @@ func uiSetup() {
 	e.Exit(err)
 	v2.SetActive(true)
 
-	w.showPermutation, err = gtk.CheckButtonNewWithLabel("show permutation")
+	w.showPermutation, err = gtk.CheckButtonNewWithMnemonic("show _permutation")
 	e.Exit(err)
 
 	field, err := gtk.TextViewNew()
@@ -98,7 +98,7 @@ func uiShuffle() {
 	text, err := w.count.GetText()
 	e.Exit(err)
 	n, err := strconv.Atoi(text)
-	if err != nil || n < 2 {
+	if err != nil || n < 1 {
 		return
 	}
 	state.v2result = v2shuffle(n)
@@ -107,12 +107,11 @@ func uiShuffle() {
 
 func uiReset() {
 	r := state.v2result
-	sides := ""
+	s := plural(r.NHeaps, "heap")
 	if r.SquareSide != 0 {
-		sides = fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
+		s += fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
 	}
-	s := fmt.Sprintf("%d heaps%s. %d actions:\n%s.",
-		r.NHeaps, sides, len(r.Actions), r)
+	s += fmt.Sprintf(". %s:\n%s.", plural(len(r.Actions), "action"), r)
 	if w.showPermutation.GetActive() {
 		s += fmt.Sprintf("\nPermutation: %v.", r.Perm)
 	}
