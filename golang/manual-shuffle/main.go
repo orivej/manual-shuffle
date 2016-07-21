@@ -10,8 +10,22 @@ import (
 
 const (
 	title  = "Manual shuffle"
-	bigCSS = "* {font-family: 'Open Sans Condensed Light'; font-size: 22pt}"
+	bigCSS = `
+* {
+; font-family: 'Open Sans Condensed Light'
+; font-size: 22pt
+}`
 )
+
+var w = struct {
+	count           *gtk.SpinButton
+	fieldBuf        *gtk.TextBuffer
+	showPermutation *gtk.CheckButton
+}{}
+
+var state = struct {
+	v2result
+}{}
 
 func main() {
 	gtk.Init(nil)
@@ -20,9 +34,10 @@ func main() {
 }
 
 func uiSetup() {
-	count, err := gtk.SpinButtonNewWithRange(2, 999, 1)
+	var err error
+	w.count, err = gtk.SpinButtonNewWithRange(2, 999, 1)
 	e.Exit(err)
-	count.SetValue(2)
+	w.count.SetValue(2)
 
 	shuffle, err := gtk.ButtonNewWithLabel("Shuffle")
 	e.Exit(err)
@@ -31,11 +46,14 @@ func uiSetup() {
 	e.Exit(err)
 	v2.SetActive(true)
 
+	w.showPermutation, err = gtk.CheckButtonNewWithLabel("show permutation")
+	e.Exit(err)
+
 	field, err := gtk.TextViewNew()
 	e.Exit(err)
 	field.SetAcceptsTab(false)
 	field.SetWrapMode(gtk.WRAP_WORD)
-	fieldBuf, err := field.GetBuffer()
+	w.fieldBuf, err = field.GetBuffer()
 	e.Exit(err)
 
 	style, err := gtk.CssProviderNew()
@@ -46,17 +64,18 @@ func uiSetup() {
 	e.Exit(err)
 	fieldStyleCtx.AddProvider(style, gtk.STYLE_PROVIDER_PRIORITY_USER+1)
 
-	cb := func() { uiShuffle(count, fieldBuf) }
-	count.Connect("changed", cb)
-	count.Connect("activate", cb)
-	shuffle.Connect("clicked", cb)
-	cb()
+	w.count.Connect("changed", uiShuffle)
+	w.count.Connect("activate", uiShuffle)
+	shuffle.Connect("clicked", uiShuffle)
+	w.showPermutation.Connect("toggled", uiReset)
+	uiShuffle()
 
 	panel, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	e.Exit(err)
-	panel.Add(count)
+	panel.Add(w.count)
 	panel.Add(shuffle)
 	// panel.Add(v2)
+	panel.Add(w.showPermutation)
 
 	fieldWindow, err := gtk.ScrolledWindowNew(nil, nil)
 	e.Exit(err)
@@ -75,18 +94,27 @@ func uiSetup() {
 	window.ShowAll()
 }
 
-func uiShuffle(count *gtk.SpinButton, fieldBuf *gtk.TextBuffer) {
-	text, err := count.GetText()
+func uiShuffle() {
+	text, err := w.count.GetText()
 	e.Exit(err)
 	n, err := strconv.Atoi(text)
 	if err != nil || n < 2 {
 		return
 	}
-	r := v2shuffle(n)
+	state.v2result = v2shuffle(n)
+	uiReset()
+}
+
+func uiReset() {
+	r := state.v2result
 	sides := ""
 	if r.SquareSide != 0 {
 		sides = fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
 	}
-	fieldBuf.SetText(fmt.Sprintf("%d heaps%s. %d actions:\n%s.\nPermutation: %v.",
-		r.NHeaps, sides, len(r.Actions), r, r.Perm))
+	s := fmt.Sprintf("%d heaps%s. %d actions:\n%s.",
+		r.NHeaps, sides, len(r.Actions), r)
+	if w.showPermutation.GetActive() {
+		s += fmt.Sprintf("\nPermutation: %v.", r.Perm)
+	}
+	w.fieldBuf.SetText(s)
 }

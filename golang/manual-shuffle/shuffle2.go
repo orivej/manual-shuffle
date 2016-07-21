@@ -64,7 +64,8 @@ func v2shuffle(n int) v2result {
 func (r v2result) String() string {
 	actions := r.Actions
 	if r.SquareSide != 0 {
-		for i, action := range actions {
+		actions = make([]int, len(actions))
+		for i, action := range r.Actions {
 			sign := 1
 			if action < 0 {
 				sign, action = -1, -action
