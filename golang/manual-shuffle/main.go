@@ -21,7 +21,7 @@ func uiSetup() {
 	e.Exit(err)
 	count.SetValue(2)
 
-	shuffle, err := gtk.ButtonNewWithLabel("Manual shuffle")
+	shuffle, err := gtk.ButtonNewWithLabel("Shuffle")
 	e.Exit(err)
 
 	v2, err := gtk.CheckButtonNewWithLabel("v2")
@@ -76,7 +76,7 @@ func uiShuffle(count *gtk.SpinButton, fieldBuf *gtk.TextBuffer) {
 	text, err := count.GetText()
 	e.Exit(err)
 	n, err := strconv.Atoi(text)
-	if err != nil {
+	if err != nil || n < 2 {
 		return
 	}
 	r := v2shuffle(n)
