@@ -71,7 +71,7 @@ func (r v2result) String() string {
 			}
 			y := 1 + (action-1)/r.SquareSide
 			x := 1 + (action-1)%r.SquareSide
-			actions[i] = sign * (10*y + x)
+			actions[i] = sign * (10*x + y)
 		}
 	}
 	s := fmt.Sprint(actions)
