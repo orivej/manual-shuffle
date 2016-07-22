@@ -55,7 +55,7 @@ func v2shuffle(n int) v2result {
 		}
 	}
 	side := 0
-	if nheaps > 9 && nheaps <= 9*9 {
+	if nheaps > 4 && nheaps <= 9*9 {
 		side = 1 + int(math.Sqrt(float64(nheaps-1)))
 	}
 	return v2result{perm, actions, nheaps, side}
