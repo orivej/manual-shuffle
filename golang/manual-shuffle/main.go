@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	title    = "Manual shuffle"
-	cellSize = 22
+	title = "Manual shuffle"
 )
 
 const css = `
@@ -40,7 +39,7 @@ var cellColor = [][3]float64{
 var cssProvider *gtk.CssProvider
 
 var w = struct {
-	count           *gtk.SpinButton
+	count, cellSize *gtk.SpinButton
 	field           *gtk.TextView
 	fieldBuf        *gtk.TextBuffer
 	fieldWindow     *gtk.ScrolledWindow
@@ -73,13 +72,16 @@ func uiSetup() {
 	shuffle, err := gtk.ButtonNewWithLabel("Shuffle")
 	e.Exit(err)
 
-	v2, err := gtk.CheckButtonNewWithLabel("v2")
+	w.showActionsText, err = gtk.CheckButtonNewWithMnemonic("Show actions _text")
 	e.Exit(err)
-	v2.SetActive(true)
+	w.showPermutation, err = gtk.CheckButtonNewWithMnemonic("Show _permutation")
+	e.Exit(err)
 
-	w.showActionsText, err = gtk.CheckButtonNewWithMnemonic("show actions _text")
+	w.cellSize, err = gtk.SpinButtonNewWithRange(1, 999, 1)
 	e.Exit(err)
-	w.showPermutation, err = gtk.CheckButtonNewWithMnemonic("show _permutation")
+	w.cellSize.SetValue(32)
+
+	cellSizeLabel, err := gtk.LabelNew("Cell size:")
 	e.Exit(err)
 
 	w.count.Connect("changed", uiShuffle)
@@ -87,14 +89,17 @@ func uiSetup() {
 	shuffle.Connect("clicked", uiShuffle)
 	w.showActionsText.Connect("toggled", uiReset)
 	w.showPermutation.Connect("toggled", uiReset)
+	w.cellSize.Connect("changed", uiReset)
 
 	panel, err := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL, 0)
 	e.Exit(err)
+	panel.SetSpacing(5)
 	panel.Add(w.count)
 	panel.Add(shuffle)
-	// panel.Add(v2)
 	panel.Add(w.showActionsText)
 	panel.Add(w.showPermutation)
+	panel.Add(cellSizeLabel)
+	panel.Add(w.cellSize)
 
 	w.fieldWindow, err = gtk.ScrolledWindowNew(nil, nil)
 	e.Exit(err)
@@ -163,6 +168,7 @@ func addGraphicalActions() {
 	r := state.v2result
 	side := r.SquareSide
 	cells := make([]int, 1+side*side)
+	areaSize := 4 + side*w.cellSize.GetValueAsInt()
 	tail := w.fieldBuf.GetEndIter()
 	for i := 0; i < len(r.Actions); i++ {
 		for k, cell := range cells {
@@ -180,7 +186,6 @@ func addGraphicalActions() {
 
 		area, err := gtk.DrawingAreaNew()
 		e.Exit(err)
-		areaSize := 4 + side*cellSize
 		area.SetSizeRequest(areaSize, areaSize)
 		setStyle(area, "borderSolid")
 		areaCells := make([]int, len(cells))
@@ -193,7 +198,7 @@ func addGraphicalActions() {
 }
 
 func drawTable(area *gtk.DrawingArea, cr *cairo.Context, side int, cells []int) {
-	u := float64(cellSize)
+	u := w.cellSize.GetValue()
 	w := area.GetAllocatedWidth()
 	h := area.GetAllocatedHeight()
 	bg := cellColor[cellPrevious]
