@@ -4,16 +4,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/gotk3/gotk3/cairo"
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/orivej/e"
 )
 
-type Coord struct {
-	X, Y int
-}
-
 const (
-	title = "Manual shuffle"
+	title    = "Manual shuffle"
+	cellSize = 22
 )
 
 const css = `
@@ -21,18 +19,23 @@ const css = `
 ; font-family: 'Open Sans Condensed Light'
 ; font-size: 22pt
 }
-
-.borderSolid {
-; border-width: 1px
-; border-style: solid
-; border-color: lightgrey
-}
-
-.bgRed { background-color: red }
-.bgBlue { background-color: blue }
-.bgGrey { background-color: grey }
-.bgLightGrey { background-color: lightgrey }
 `
+
+const (
+	cellEmpty = iota
+	cellMerged
+	cellOccupied
+	cellPrevious
+	cellCurrent
+)
+
+var cellColor = [][3]float64{
+	{1, 1, 1},
+	{0, 0.2, 0.7},
+	{0.7, 0.8, 0.8},
+	{0.4, 0.5, 0.5},
+	{1, 0.1, 0.1},
+}
 
 var cssProvider *gtk.CssProvider
 
@@ -158,57 +161,50 @@ func uiReset() {
 
 func addGraphicalActions() {
 	r := state.v2result
-	newCell := func(class string) *gtk.DrawingArea {
-		cell, err := gtk.DrawingAreaNew()
-		e.Exit(err)
-		cell.SetSizeRequest(20, 20)
-		if class != "" {
-			setStyle(cell, class)
-		}
-		return cell
-	}
-	actionXY := func(action int) Coord {
-		return Coord{(action - 1) / r.SquareSide, (action - 1) % r.SquareSide}
-	}
-	occupied := map[Coord]bool{}
-	prevAction := 0
+	side := r.SquareSide
+	cells := make([]int, 1+side*side)
 	tail := w.fieldBuf.GetEndIter()
 	for i := 0; i < len(r.Actions); i++ {
-		table, err := gtk.GridNew()
-		e.Exit(err)
-		table.SetBorderWidth(1)
-		setStyle(table, "borderSolid")
-		addCell := func(class string, c Coord) {
-			if _, err := table.GetChildAt(c.X, c.Y); err != nil {
-				table.Attach(newCell(class), c.X, c.Y, 1, 1)
+		for k, cell := range cells {
+			if cell != cellEmpty && cell != cellOccupied {
+				cells[k]--
 			}
 		}
 
-		action := r.Actions[i]
-		coord := actionXY(action)
-		addCell("bgRed", coord)
-		occupied[coord] = true
+		cells[r.Actions[i]] = cellCurrent
 
 		if i+1 < len(r.Actions) && r.Actions[i+1] < 0 {
 			i++
-			coord := actionXY(-r.Actions[i])
-			addCell("bgBlue", coord)
-			delete(occupied, coord)
+			cells[-r.Actions[i]] = cellMerged
 		}
 
-		if prevAction != 0 {
-			addCell("bgGrey", actionXY(prevAction))
-		}
-		prevAction = action
+		area, err := gtk.DrawingAreaNew()
+		e.Exit(err)
+		areaSize := 4 + side*cellSize
+		area.SetSizeRequest(areaSize, areaSize)
+		setStyle(area, "borderSolid")
+		areaCells := make([]int, len(cells))
+		copy(areaCells, cells)
+		area.Connect("draw", func(area *gtk.DrawingArea, cr *cairo.Context) {
+			drawTable(area, cr, side, areaCells)
+		})
+		w.field.AddChildAtAnchor(area, w.fieldBuf.CreateChildAnchor(tail))
+	}
+}
 
-		for coord := range occupied {
-			addCell("bgLightGrey", coord)
-		}
-
-		for k := 0; k < r.SquareSide; k++ {
-			addCell("", Coord{k, k})
-		}
-
-		w.field.AddChildAtAnchor(table, w.fieldBuf.CreateChildAnchor(tail))
+func drawTable(area *gtk.DrawingArea, cr *cairo.Context, side int, cells []int) {
+	u := float64(cellSize)
+	w := area.GetAllocatedWidth()
+	h := area.GetAllocatedHeight()
+	bg := cellColor[cellPrevious]
+	cr.SetSourceRGB(bg[0], bg[1], bg[2])
+	cr.Rectangle(1, 1, float64(w-2), float64(h-2))
+	cr.Fill()
+	for k, cell := range cells[1:] {
+		color := cellColor[cell]
+		x, y := float64(k/side), float64(k%side)
+		cr.SetSourceRGB(color[0], color[1], color[2])
+		cr.Rectangle(2+x*u, 2+y*u, u, u)
+		cr.Fill()
 	}
 }
