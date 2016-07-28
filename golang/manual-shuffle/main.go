@@ -147,7 +147,7 @@ func uiReset() {
 	r := state.v2result
 	textual := w.showActionsText.GetActive() || r.SquareSide == 0
 	s := plural(r.NHeaps, "heap")
-	if r.SquareSide != 0 {
+	if !textual || r.SquareSide <= 9 {
 		s += fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
 	}
 	s += fmt.Sprintf(". %s:\n", plural(len(r.Actions), "action"))

@@ -54,16 +54,13 @@ func v2shuffle(n int) v2result {
 			actions = append(actions, -bot[prev])
 		}
 	}
-	side := 0
-	if nheaps > 4 && nheaps <= 9*9 {
-		side = 1 + int(math.Sqrt(float64(nheaps-1)))
-	}
+	side := 1 + int(math.Sqrt(float64(nheaps-1)))
 	return v2result{perm, actions, nheaps, side}
 }
 
 func (r v2result) String() string {
 	actions := r.Actions
-	if r.SquareSide != 0 {
+	if r.SquareSide <= 9 {
 		actions = make([]int, len(actions))
 		for i, action := range r.Actions {
 			sign := 1
