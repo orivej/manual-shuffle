@@ -26,6 +26,7 @@ const (
 	cellOccupied
 	cellPrevious
 	cellCurrent
+	cellCurrentToMerge
 )
 
 var cellColor = [][3]float64{
@@ -33,6 +34,7 @@ var cellColor = [][3]float64{
 	{0, 0.2, 0.7},
 	{0.7, 0.8, 0.8},
 	{0.4, 0.5, 0.5},
+	{1, 0.4, 0.4},
 	{1, 0.1, 0.1},
 }
 
@@ -115,6 +117,7 @@ func uiSetup() {
 	window.Add(layout)
 	window.Connect("destroy", gtk.MainQuit)
 	uiShuffle()
+	window.Maximize()
 	window.ShowAll()
 }
 
@@ -179,17 +182,23 @@ func addGraphicalActions() {
 
 		cells[r.Actions[i]] = cellCurrent
 
+		merged := false
 		if i+1 < len(r.Actions) && r.Actions[i+1] < 0 {
+			merged = true
 			i++
 			cells[-r.Actions[i]] = cellMerged
+		}
+
+		areaCells := make([]int, len(cells))
+		copy(areaCells, cells)
+		if merged {
+			areaCells[r.Actions[i-1]] = cellCurrentToMerge
 		}
 
 		area, err := gtk.DrawingAreaNew()
 		e.Exit(err)
 		area.SetSizeRequest(areaSize, areaSize)
 		setStyle(area, "borderSolid")
-		areaCells := make([]int, len(cells))
-		copy(areaCells, cells)
 		area.Connect("draw", func(area *gtk.DrawingArea, cr *cairo.Context) {
 			drawTable(area, cr, side, areaCells)
 		})
