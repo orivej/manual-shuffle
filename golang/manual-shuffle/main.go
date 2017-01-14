@@ -54,6 +54,7 @@ var state = struct {
 }{}
 
 func main() {
+	seed()
 	gtk.Init(nil)
 	uiSetup()
 	gtk.Main()
