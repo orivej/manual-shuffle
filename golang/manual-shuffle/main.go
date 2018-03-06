@@ -149,10 +149,10 @@ func uiReset() {
 	w.fieldWindow.Add(w.field)
 
 	r := state.v2result
-	textual := w.showActionsText.GetActive() || r.SquareSide == 0
+	textual := w.showActionsText.GetActive() || r.LongSide == 0
 	s := plural(r.NHeaps, "heap")
-	if !textual || r.SquareSide <= 9 {
-		s += fmt.Sprintf(" in a %d×%d layout", r.SquareSide, r.SquareSide)
+	if !textual || r.LongSide <= 9 {
+		s += fmt.Sprintf(" in a %d×%d layout", r.LongSide, r.ShortSide)
 	}
 	s += fmt.Sprintf(". %s:\n", plural(len(r.Actions), "action"))
 	if textual {
@@ -170,9 +170,9 @@ func uiReset() {
 
 func addGraphicalActions() {
 	r := state.v2result
-	side := r.SquareSide
-	cells := make([]int, 1+side*side)
-	areaSize := 4 + side*w.cellSize.GetValueAsInt()
+	cells := make([]int, 1+r.LongSide*r.ShortSide)
+	areaW := 4 + r.ShortSide*w.cellSize.GetValueAsInt()
+	areaH := 4 + r.LongSide*w.cellSize.GetValueAsInt()
 	tail := w.fieldBuf.GetEndIter()
 	for i := 0; i < len(r.Actions); i++ {
 		for k, cell := range cells {
@@ -198,10 +198,10 @@ func addGraphicalActions() {
 
 		area, err := gtk.DrawingAreaNew()
 		e.Exit(err)
-		area.SetSizeRequest(areaSize, areaSize)
+		area.SetSizeRequest(areaW, areaH)
 		setStyle(area, "borderSolid")
 		area.Connect("draw", func(area *gtk.DrawingArea, cr *cairo.Context) {
-			drawTable(area, cr, side, areaCells)
+			drawTable(area, cr, r.LongSide, areaCells)
 		})
 		w.field.AddChildAtAnchor(area, w.fieldBuf.CreateChildAnchor(tail))
 	}

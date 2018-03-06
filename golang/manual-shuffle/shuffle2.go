@@ -11,10 +11,11 @@ import (
 // - 1..M :: put one card onto specified deck
 // - -M..-1 :: put specified deck onto the deck from the previous move
 type v2result struct {
-	Perm       []int
-	Actions    []int
-	NHeaps     int
-	SquareSide int
+	Perm      []int
+	Actions   []int
+	NHeaps    int
+	LongSide  int
+	ShortSide int
 }
 
 func v2shuffle(n int) v2result {
@@ -54,21 +55,22 @@ func v2shuffle(n int) v2result {
 			actions = append(actions, -bot[prev])
 		}
 	}
-	side := 1 + int(math.Sqrt(float64(nheaps-1)))
-	return v2result{perm, actions, nheaps, side}
+	longSide := 1 + int(math.Sqrt(float64(nheaps-1)))
+	shortSide := 1 + (nheaps-1)/longSide
+	return v2result{perm, actions, nheaps, longSide, shortSide}
 }
 
 func (r v2result) String() string {
 	actions := r.Actions
-	if r.SquareSide <= 9 {
+	if r.LongSide <= 9 {
 		actions = make([]int, len(actions))
 		for i, action := range r.Actions {
 			sign := 1
 			if action < 0 {
 				sign, action = -1, -action
 			}
-			y := 1 + (action-1)/r.SquareSide
-			x := 1 + (action-1)%r.SquareSide
+			y := 1 + (action-1)/r.LongSide
+			x := 1 + (action-1)%r.LongSide
 			actions[i] = sign * (10*x + y)
 		}
 	}
