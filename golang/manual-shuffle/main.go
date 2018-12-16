@@ -173,7 +173,6 @@ func addGraphicalActions() {
 	cells := make([]int, 1+r.LongSide*r.ShortSide)
 	areaW := 4 + r.ShortSide*w.cellSize.GetValueAsInt()
 	areaH := 4 + r.LongSide*w.cellSize.GetValueAsInt()
-	tail := w.fieldBuf.GetEndIter()
 	for i := 0; i < len(r.Actions); i++ {
 		for k, cell := range cells {
 			if cell != cellEmpty && cell != cellOccupied {
@@ -203,7 +202,8 @@ func addGraphicalActions() {
 		area.Connect("draw", func(area *gtk.DrawingArea, cr *cairo.Context) {
 			drawTable(area, cr, r.LongSide, areaCells)
 		})
-		w.field.AddChildAtAnchor(area, w.fieldBuf.CreateChildAnchor(tail))
+		tail := w.fieldBuf.CreateChildAnchor(w.fieldBuf.GetEndIter())
+		w.field.AddChildAtAnchor(area, tail)
 	}
 }
 
