@@ -202,7 +202,8 @@ func addGraphicalActions() {
 		area.Connect("draw", func(area *gtk.DrawingArea, cr *cairo.Context) {
 			drawTable(area, cr, r.LongSide, areaCells)
 		})
-		tail := w.fieldBuf.CreateChildAnchor(w.fieldBuf.GetEndIter())
+		tail, err := w.fieldBuf.CreateChildAnchor(w.fieldBuf.GetEndIter())
+		e.Exit(err)
 		w.field.AddChildAtAnchor(area, tail)
 	}
 }
