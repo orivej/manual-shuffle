@@ -1,0 +1,6 @@
+github.com/bep/inflect v0.0.0-20160408190323-b896c45f5af9 h1:2ZyfRr6MKtNow0D0AbbVlzrS3OI6a+svlOHrtFYGI9Q=
+github.com/bep/inflect v0.0.0-20160408190323-b896c45f5af9/go.mod h1:/fmCHLLmoBKSfptXUFVJZb7MMt7JCS4vm0vqQmAo3xE=
+github.com/gotk3/gotk3 v0.6.5-0.20240618185848-ff349ae13f56 h1:eR+xxC8qqKuPMTucZqaklBxLIT7/4L7dzhlwKMrDbj8=
+github.com/gotk3/gotk3 v0.6.5-0.20240618185848-ff349ae13f56/go.mod h1:/hqFpkNa9T3JgNAE2fLvCdov7c5bw//FHNZrZ3Uv9/Q=
+github.com/orivej/e v1.0.0 h1:OyEBMhLfN7hl5EtDNgS6TK7cd86k+IT0S4Ki9jhj9/s=
+github.com/orivej/e v1.0.0/go.mod h1:eOxOguJBxQH6q/o7CZvmR+fh5v1LHH1sfohtgISSSFA=
